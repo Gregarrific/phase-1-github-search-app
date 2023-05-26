@@ -1,6 +1,5 @@
 let searchForm = document.getElementById('github-form');
-// console.log(searchForm);
-
+//Event Listeners
 searchForm.addEventListener('submit', event => {
     event.preventDefault();
     const inputText = document.getElementById('search');
@@ -8,28 +7,32 @@ searchForm.addEventListener('submit', event => {
         headers: {'Accept': 'application/vnd.github.v3+json'}
         })
     .then (response => response.json())
-    .then (json => retrieveItems(json.items));
+    .then (json => retrieveUsers(json.items));
 })
-
 document.addEventListener('click', event => {
-    console.log(event.target);
+    const repo = event.target.alt;
     if (event.target.alt) {
-        console.log('hell yeah');
+        console.log(repo);
+        fetch(repo, {
+            headers: {'Accept': 'application/vnd.github.v3+json'}
+            })
+        .then (response => response.json())
+        .then (json => retrieveRepo(json));
     };
-    // fetch(event.alt, {
-    //     headers: {'Accept': 'application/vnd.github.v3+json'}        
-    // })
-    // .then (response => response.json())
-    // .then (json => console.log(json));
 })
-
-function retrieveItems(items) {
+//Functions
+function retrieveUsers(items) {
+    //Remove list of github users from DOM
     let oldList = document.getElementById('user-list');
         while (oldList.firstChild) {
             oldList.firstChild.remove();
         };
+    //Remove list of repos-if any-from DOM
+    oldList = document.getElementById('repos-list');
+        while (oldList.firstChild) {
+            oldList.firstChild.remove();
+        };
     items.forEach(element => {
-        console.log(element);
         let userContainer = document.createElement('li');
         userContainer.id = element.id;
         let userName = document.createElement('a');
@@ -43,5 +46,29 @@ function retrieveItems(items) {
         document.getElementById('user-list').appendChild(userContainer);
         document.getElementById(userContainer.id).appendChild(userAvatar);
         document.getElementById(userContainer.id).appendChild(userName);
+    });
+}
+function retrieveRepo(items) {
+    //Remove list of repos-if any-from DOM
+    let oldList = document.getElementById('repos-list');
+        while (oldList.firstChild) {
+            oldList.firstChild.remove();
+        };
+        // Add github user info back to DOM
+        let userHeader = document.createElement('h2');
+        userHeader.innerText = `Repositories for ${items[0].owner.login}`;
+        document.getElementById('repos-list').appendChild(userHeader);
+    items.forEach(element => {
+        let repoContainer = document.createElement('li');
+        repoContainer.id = element.id;
+        let repoName = document.createElement('a');
+        repoName.setAttribute('href', element.html_url);
+        repoName.setAttribute('target', '_blank');
+        repoName.innerText = element.name;
+        let repoDescription = document.createElement('p');
+        repoDescription.innerText = element.description;
+        document.getElementById('repos-list').appendChild(repoContainer);
+        document.getElementById(repoContainer.id).appendChild(repoName);
+        document.getElementById(repoContainer.id).appendChild(repoDescription);
     });
 }
